@@ -4,19 +4,28 @@ A CMake toolchain file for iOS (+ Catalyst), watchOS, tvOS and macOS development
 * Experimental Catalyst support (iOS on macOS)
 * macOS support and experimental Apple Silicon support
 * Deprecated options now removed.
+* Builds now run on Github Actions
 
 ios-cmake
 =========
 
-[![Build Status](https://travis-ci.org/leetal/ios-cmake.svg?branch=master)](https://travis-ci.org/leetal/ios-cmake)
+[![catalyst-jobs](https://github.com/leetal/ios-cmake/actions/workflows/catalyst.yml/badge.svg)](https://github.com/leetal/ios-cmake/actions/workflows/catalyst.yml) &nbsp; [![combined-jobs](https://github.com/leetal/ios-cmake/actions/workflows/combined.yml/badge.svg)](https://github.com/leetal/ios-cmake/actions/workflows/combined.yml) &nbsp; [![ios-jobs](https://github.com/leetal/ios-cmake/actions/workflows/ios.yml/badge.svg)](https://github.com/leetal/ios-cmake/actions/workflows/ios.yml)
+
+[![macos-jobs](https://github.com/leetal/ios-cmake/actions/workflows/macos.yml/badge.svg)](https://github.com/leetal/ios-cmake/actions/workflows/macos.yml) &nbsp; [![tvos-jobs](https://github.com/leetal/ios-cmake/actions/workflows/tvos.yml/badge.svg)](https://github.com/leetal/ios-cmake/actions/workflows/tvos.yml) &nbsp; [![watchos-jobs](https://github.com/leetal/ios-cmake/actions/workflows/watchos.yml/badge.svg)](https://github.com/leetal/ios-cmake/actions/workflows/watchos.yml)
 
 Tested with the following combinations:
-* XCode 8.3, iOS SDK 10.3
-* XCode 9.4, iOS SDK 11.4
-* XCode 10.2, iOS SDK 12.2
-* XCode 11.1, iOS SDK 13.1
-* XCode 11.3, iOS SDK 13.3
-* XCode 12.4, iOS/iPadOS SDK 14.4, tvOS 14.3, watchOS 7.2, macOS SDK 11.1
+* XCode 11.7
+  - iOS SDK 9.0 & 11.0
+  - watchOS SDK 5.0
+  - tvOS SDK 11.0
+* XCode 12.5.1
+  - iOS SDK 12.0
+  - watchOS SDK 7.0
+  - macOS SDK 10.13
+  - iOS, watchOS, tvOS combined builds, mixed SDKs
+* XCode 13.2
+  - Mac Catalyst SDK 13.0
+  - macOS SDK 11.0
 
 ## Platform flag options (-DPLATFORM=_flag_)
 
@@ -29,11 +38,13 @@ Tested with the following combinations:
 * _TVOS_ - to build for tvOS (arm64)
 * _TVOSCOMBINED_ - to build for tvOS & tvOS Simulator (arm64, x86_64)
 * _SIMULATOR_TVOS_ - to build for tvOS Simulator (x86_64)
+* _SIMULATORARM64_TVOS_ = to build for tvOS Simulator (arm64)
 * _WATCHOS_ - to build for watchOS (armv7k, arm64_32)
 * _WATCHOSCOMBINED_ - to build for watchOS & Simulator (armv7k, arm64_32, i386)
 * _SIMULATOR_WATCHOS_ - to build for watchOS Simulator (i386)
 * _MAC_ - to build for macOS (x86_64)
 * _MAC_ARM64_ - to build for macOS on Apple Silicon (arm64)
+* _MAC_UNIVERSAL_ - to build for macOS on x86_64 and Apple Silicon (arm64) combined
 * _MAC_CATALYST_ - to build iOS for Mac (Catalyst, x86_64)
 * _MAC_CATALYST_ARM64_ - to build iOS for Mac on Apple Silicon (Catalyst, arm64)
 
@@ -48,7 +59,7 @@ cmake .. -G Xcode -DCMAKE_TOOLCHAIN_FILE=../../ios.toolchain.cmake -DPLATFORM=OS
 cmake --build . --config Release
 ```
 
-This will build and install the library for the given PLATFORM. In this case, iOS with the arm64 architecture.
+This will build the library for the given PLATFORM. In this case, iOS with the arm64 architecture.
 
 ### COMBINED Options
 The options called *COMBINED (OS64COMBINED, TVOSCOMBINED and WATCHOSCOMBINED) will build complete FAT-libraries for 
@@ -59,7 +70,7 @@ Example:
 ```bash
 cmake . -G Xcode -DCMAKE_TOOLCHAIN_FILE=../../ios.toolchain.cmake -DPLATFORM=OS64COMBINED
 cmake --build . --config Release
-cmake --install . --config Release
+cmake --install . --config Release # Necessary to build combined library
 ```
 
 **_NOTE_: The COMBINED options _ONLY_ work with the Xcode generator (-G Xcode) on CMake versions 3.14+!**
@@ -76,7 +87,7 @@ cmake --install . --config Release
 `APPLE_TARGET_TRIPLE` - Used by autoconf build systems. 
 
 ### Additional Options
-`-DENABLE_BITCODE=(BOOL)` - Enabled by default, specify FALSE or 0 to disable bitcode
+`-DENABLE_BITCODE=(BOOL)` - Disabled by default, specify TRUE or 1 to enable bitcode
 
 `-DENABLE_ARC=(BOOL)` - Enabled by default, specify FALSE or 0 to disable ARC
 
