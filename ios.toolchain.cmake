@@ -240,15 +240,15 @@ if(NOT DEFINED DEPLOYMENT_TARGET)
     # Unless specified, SDK version 11.0 (Big Sur) is used by default as minimum target version (macos on arm).
     set(DEPLOYMENT_TARGET "11.0")
   elseif(PLATFORM STREQUAL "MAC_CATALYST" OR PLATFORM STREQUAL "MAC_CATALYST_ARM64")
-    # Unless specified, SDK version 13.1 is used by default as minimum target version (mac catalyst minimum requirement).
-    set(DEPLOYMENT_TARGET "13.1")
+    # Unless specified, SDK version 13.0 is used by default as minimum target version (mac catalyst minimum requirement).
+    set(DEPLOYMENT_TARGET "13.0")
   else()
     # Unless specified, SDK version 11.0 is used by default as minimum target version (iOS, tvOS).
     set(DEPLOYMENT_TARGET "11.0")
   endif()
   message(STATUS "[DEFAULTS] Using the default min-version since DEPLOYMENT_TARGET not provided!")
-elseif(DEFINED DEPLOYMENT_TARGET AND PLATFORM MATCHES "^MAC_CATALYST" AND ${DEPLOYMENT_TARGET} VERSION_LESS "13.1")
-  message(FATAL_ERROR "Mac Catalyst builds requires a minimum deployment target of 13.1!")
+elseif(DEFINED DEPLOYMENT_TARGET AND PLATFORM MATCHES "^MAC_CATALYST" AND ${DEPLOYMENT_TARGET} VERSION_LESS "13.0")
+  message(FATAL_ERROR "Mac Catalyst builds requires a minimum deployment target of 13.0!")
 endif()
 
 # Store the DEPLOYMENT_TARGET in the cache
@@ -716,11 +716,9 @@ if(${CMAKE_VERSION} VERSION_LESS "3.11")
     set(SDK_NAME_VERSION_FLAGS
             "-mios-simulator-version-min=${DEPLOYMENT_TARGET}")
   endif()
-elseif(PLATFORM_INT MATCHES "^MAC_CATALYST")
+elseif(NOT PLATFORM_INT MATCHES "^MAC_CATALYST")
   # Newer versions of CMake sets the version min flags correctly, skip this for Mac Catalyst targets
   set(CMAKE_OSX_DEPLOYMENT_TARGET ${DEPLOYMENT_TARGET})
-  set(SDK_NAME_VERSION_FLAGS
-            "-miphoneos-version-min=${DEPLOYMENT_TARGET}")
 endif()
 
 if(DEFINED APPLE_TARGET_TRIPLE_INT)
@@ -728,7 +726,7 @@ if(DEFINED APPLE_TARGET_TRIPLE_INT)
 endif()
 
 if(PLATFORM_INT MATCHES "^MAC_CATALYST")
-  set(C_TARGET_FLAGS "-target ${APPLE_TARGET_TRIPLE_INT} -isystem ${CMAKE_OSX_SYSROOT_INT}/System/iOSSupport/usr/include -iframework ${CMAKE_OSX_SYSROOT_INT}/System/iOSSupport/System/Library/Frameworks")
+  set(C_TARGET_FLAGS "-target ${APPLE_TARGET_TRIPLE_INT} -isystem ${CMAKE_OSX_SYSROOT_INT}/System/iOSSupport/usr/include")
 endif()
 
 if(ENABLE_BITCODE_INT)
@@ -764,15 +762,6 @@ endif()
 
 #Check if Xcode generator is used, since that will handle these flags automagically
 if(CMAKE_GENERATOR MATCHES "Xcode")
-  set(CMAKE_C_FLAGS "${C_TARGET_FLAGS} ${SDK_NAME_VERSION_FLAGS} ${BITCODE} -fobjc-abi-version=2 ${FOBJC_ARC} ${CMAKE_C_FLAGS}")
-  set(CMAKE_CXX_FLAGS "${C_TARGET_FLAGS} ${SDK_NAME_VERSION_FLAGS} ${BITCODE} ${VISIBILITY} -fobjc-abi-version=2 ${FOBJC_ARC} ${CMAKE_CXX_FLAGS}")
-  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -O0 -g ${CMAKE_CXX_FLAGS_DEBUG}")
-  set(CMAKE_CXX_FLAGS_MINSIZEREL "${CMAKE_CXX_FLAGS} -DNDEBUG -Os -ffast-math ${CMAKE_CXX_FLAGS_MINSIZEREL}")
-  set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS} -DNDEBUG -O2 -g -ffast-math ${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
-  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -DNDEBUG -O3 -ffast-math ${CMAKE_CXX_FLAGS_RELEASE}")
-  set(CMAKE_C_LINK_FLAGS "${C_TARGET_FLAGS} ${SDK_NAME_VERSION_FLAGS} -Wl,-search_paths_first ${CMAKE_C_LINK_FLAGS}")
-  set(CMAKE_CXX_LINK_FLAGS "${C_TARGET_FLAGS} ${SDK_NAME_VERSION_FLAGS}  -Wl,-search_paths_first ${CMAKE_CXX_LINK_FLAGS}")
-  set(CMAKE_ASM_FLAGS "${CMAKE_C_FLAGS} -x assembler-with-cpp -arch ${CMAKE_OSX_ARCHITECTURES}")
   message(STATUS "Not setting any manual command-line buildflags, since Xcode is selected as generator.")
 else()
   # Hidden visibility is required for C++ on iOS.
